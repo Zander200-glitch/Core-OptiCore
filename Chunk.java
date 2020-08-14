@@ -186,10 +186,10 @@ public class Chunk {
 
     public void printChunk(){
         for (int i = 0; i < block.length; i++){
-//            System.out.println(block[i]);
-//            if(block[i] != 1){ //this is debug
-//                System.out.printf("WARNING!");
-//            }
+            System.out.println(block[i]);
+            if(block[i] != 1){ //this is debug
+                System.out.printf("WARNING!");
+            }
         }
     }
 }

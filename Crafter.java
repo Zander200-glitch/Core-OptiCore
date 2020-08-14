@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class Crafter extends SimpleApplication {
+    private static int renderedChunkCounter = 0;
+
     public static void main(String[] args) throws IOException {
         //self app creation
         Crafter app = new Crafter();
@@ -122,7 +124,7 @@ public class Crafter extends SimpleApplication {
 
         //this is for dynamic chunk generation
         //counter++;
-        int renderedChunkCounter = 0;
+
         if (z <= renderDistance) {
             long startTime = System.currentTimeMillis();
 
@@ -134,7 +136,7 @@ public class Crafter extends SimpleApplication {
             double timeElapsed = (double) (endTime - startTime) / 1000;
             renderedChunkCounter++;
             if(mod_opticore_main.isOc_generalDebugOutput()){
-                System.out.println(mod_opticore_main.oc_getCoreOutputSignature() + "Chunk init time: " + timeElapsed + " seconds. Rendered chunk " + renderedChunkCounter + " of " + mod_opticore_main.getOc_renderDistance() * mod_opticore_main.getOc_renderDistance());
+                System.out.println(mod_opticore_main.oc_getCoreOutputSignature() + "Chunk init time: " + timeElapsed + " seconds. Rendered chunk " + renderedChunkCounter + " of predicted " + (mod_opticore_main.getOc_renderDistance() * mod_opticore_main.getOc_renderDistance()) * mod_opticore_main.getOc_renderDistance());
             }
 
 

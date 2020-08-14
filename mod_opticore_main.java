@@ -9,7 +9,7 @@ public class mod_opticore_main {
     private static String ModName = "OptiCore";
 
     // opticore visual settings
-    private static int oc_renderDistance = 5; // render distance
+    private static int oc_renderDistance = 3; // render distance
     public static int getOc_renderDistance(){ return oc_renderDistance; }
 
     private static int oc_maxSpeed = (oc_renderDistance * 7);
@@ -30,6 +30,7 @@ public class mod_opticore_main {
     //opticore main
     public static void oc_main(){
         System.out.println(oc_getClientOutputSignature() + ModName + ModVersion + " is starting.");
+        System.out.println(oc_getClientOutputSignature() + "Visit my Discord Server here: https://discord.gg/m5mpZ5w");
     }
 
     public static void oc_printCoreError(String errmsg){
