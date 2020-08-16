@@ -1,14 +1,18 @@
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.FileLocator;
+import com.jme3.font.BitmapText;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
-import com.jme3.scene.CameraNode;
-import com.jme3.scene.Node;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.shape.StripBox;
 import com.jme3.system.AppSettings;
 
 import javax.imageio.ImageIO;
@@ -18,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class Crafter extends SimpleApplication {
-    private static int renderedChunkCounter = 0;
+
 
     public static void main(String[] args) throws IOException {
         //self app creation
@@ -36,7 +40,7 @@ public class Crafter extends SimpleApplication {
         appSettings.setHeight(d.height/2);
 
         //window title
-        appSettings.setTitle("Core (Modded) Mods: [BaseEngine *Crafter* by oilboi, JavaMod *OptiCore* by Zander_200]");
+        appSettings.setTitle("Core | (Modded) OptiCore 0.63-indev by Zander_200");
 
         app.setDisplayFps(true);
 
@@ -49,13 +53,16 @@ public class Crafter extends SimpleApplication {
 
         //begin app
         app.start();
-        mod_opticore_main.oc_main();
     }
 
     private void initKeys() {
         Inputs.initializeKeys(inputManager,actionListener,analogListener);
     }
 
+    private static Ray testRay;
+
+    private BitmapText playerPosText;
+    private BitmapText optiCredits;
     @Override
     public void simpleInitApp() {
         initKeys();
@@ -77,12 +84,44 @@ public class Crafter extends SimpleApplication {
         //used statically. Object initialized here for loading textures
         Loader textureLoader = new Loader(assetManager);
 
+        guiFont = assetManager.loadFont("pixel.fnt");
+        playerPosText = new BitmapText(guiFont, false);
+        playerPosText.setSize(guiFont.getCharSet().getRenderedSize());
+        playerPosText.setName("pos");
+
+        guiFont = assetManager.loadFont("pixel.fnt");
+        optiCredits = new BitmapText(guiFont, false);
+        optiCredits.setSize(guiFont.getCharSet().getRenderedSize());
+        optiCredits.setName("optiCredits");
+
+        Sphere collisionImpactMesh = new Sphere(32, 32, 0.1f, false, false);
+        Geometry geom = new Geometry("A shape", collisionImpactMesh);
+        Material mat = new Material(assetManager,
+                "Common/MatDefs/Misc/ShowNormals.j3md");
+        geom.setMaterial(mat);
+        // if you want, transform (move, rotate, scale) the geometry.
+        geom.setLocalTranslation(0,55,0);
+        geom.setName("collision");
+        rootNode.attachChild(geom);
+
+        testRay = new Ray(new Vector3f(0,0,0), new Vector3f(0,0,0) , 4f);
 
 
 
+        Box wireCube = new Box(0.51f,0.51f,0.51f);
+
+        wireCube.setMode(Mesh.Mode.Lines);
+
+        Geometry selectionBox = new Geometry("Box", wireCube );
+        selectionBox.setLocalTranslation(0,60,0);
+        Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat1.setColor("Color", ColorRGBA.Black);
+        selectionBox.setMaterial(mat1);
+        selectionBox.setName("selector");
+        rootNode.attachChild(selectionBox);
     }
 
-    private static int renderDistance = mod_opticore_main.getOc_renderDistance();
+    private static int renderDistance = 2;
 
     private int x = -renderDistance;
     private int z = -renderDistance;
@@ -95,10 +134,18 @@ public class Crafter extends SimpleApplication {
         return renderDistance;
     }
 
+    public static void setRenderDistance(int rDi){
+        renderDistance = rDi;
+    }
+
+
 
 
     @Override
     public void simpleUpdate(float tpf){
+
+        testRay = new Ray(Player.getPosWithEyeHeight(), cam.getDirection(), 4f);
+        testRay.rayCast(rootNode,assetManager);
 
         GameCamera.handleCamera(cam);
 
@@ -106,6 +153,17 @@ public class Crafter extends SimpleApplication {
             Player.playerOnTick(tpf);
         }
 
+        guiNode.detachChildNamed("pos");
+        playerPosText.setText("X: " + Player.getPos().x + "\nY: " + Player.getPos().y + "\nZ: " + Player.getPos().z);
+        playerPosText.setLocalTranslation(10, cam.getHeight(), 0);
+        playerPosText.setSize(24f);
+        guiNode.attachChild(playerPosText);
+
+        guiNode.detachChildNamed("optiCredits");
+        optiCredits.setText("OptiCore v0.63 by Zander_200");
+        optiCredits.setLocalTranslation(10, cam.getHeight() - 110f, 300);
+        optiCredits.setSize(20f);
+        guiNode.attachChild(optiCredits);
         //this is for warming up vm then gen 1 chunk
 //        if (counter > 5 && !genned) {
 //            long startTime = System.currentTimeMillis();
@@ -124,7 +182,6 @@ public class Crafter extends SimpleApplication {
 
         //this is for dynamic chunk generation
         //counter++;
-
         if (z <= renderDistance) {
             long startTime = System.currentTimeMillis();
 
@@ -134,10 +191,7 @@ public class Crafter extends SimpleApplication {
 
             long endTime = System.currentTimeMillis();
             double timeElapsed = (double) (endTime - startTime) / 1000;
-            renderedChunkCounter++;
-            if(mod_opticore_main.isOc_generalDebugOutput()){
-                System.out.println(mod_opticore_main.oc_getCoreOutputSignature() + "Chunk init time: " + timeElapsed + " seconds. Rendered chunk " + renderedChunkCounter + " of predicted " + (mod_opticore_main.getOc_renderDistance() * mod_opticore_main.getOc_renderDistance()) * mod_opticore_main.getOc_renderDistance());
-            }
+            System.out.println("Chunk init time: " + timeElapsed + " seconds");
 
 
             x++;
@@ -148,8 +202,8 @@ public class Crafter extends SimpleApplication {
                     genned = true;
                 }
             }
-
         }
+
 
     }
 

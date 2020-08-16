@@ -17,14 +17,18 @@ public class Inputs {
         inputManager.addMapping("d", new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping("shift", new KeyTrigger(KeyInput.KEY_LSHIFT));
         inputManager.addMapping("space", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("g", new KeyTrigger(KeyInput.KEY_G));
+
+        inputManager.addMapping("left", new KeyTrigger(KeyInput.KEY_LCONTROL));
+
+        inputManager.addMapping("o", new KeyTrigger(KeyInput.KEY_O));
+        inputManager.addMapping("p", new KeyTrigger(KeyInput.KEY_P));
 
         // Add the names to the action listener.
         //inputManager.addListener(actionListener, "Pause");
-        inputManager.addListener(analogListener, "w", "a", "s", "d", "shift", "space", "g");
+        inputManager.addListener(analogListener, "w", "a", "s", "d", "shift", "space", "left", "o", "p");
     }
 
-    private static int maxSpeed = mod_opticore_main.getOc_maxSpeed();
+    private static int maxSpeed = Crafter.getRenderDistance() * 7;
     public static void handleKeys(Camera cam, float tpf, String name, float value ){
         float dir = 0;
         int run2D = 1;
@@ -41,15 +45,14 @@ public class Inputs {
             case "d":
                 dir = FastMath.HALF_PI + FastMath.PI;
                 break;
-            case "g":
-                Vector3f pPos = new Vector3f(Player.getPos());
-                Vector3f nPos = new Vector3f(pPos.x, pPos.y - 1, pPos.z);
-                Player.setPos(nPos);
             default:
                 run2D = 0;
                 break;
         }
 
+        if (name.equals("left")){
+            Player.setMining();
+        }
 
         switch (run2D) {
             case 1:
@@ -77,11 +80,17 @@ public class Inputs {
                     case "space":
                         move = 1;
                         break;
-                    case "shift":
-                        if(mod_opticore_main.getOc_isFlyEnabled()){
-                            move = -1;
-                        }
+                    case "o":
+                        Crafter.setRenderDistance(Crafter.getRenderDistance() - 1);
+                        OptiCore.out("Set renderDistance to: " + Crafter.getRenderDistance());
                         break;
+                    case "p":
+                        Crafter.setRenderDistance(Crafter.getRenderDistance() + 1);
+                        OptiCore.out("Set renderDistance to: " + Crafter.getRenderDistance());
+                        break;
+                    //case "shift":
+                    //    move = -1;
+                    //    break;ppp
                 }
 
                 if(move==0){
@@ -89,9 +98,7 @@ public class Inputs {
                 }
 
                 if(Player.isOnGround()) {
-                    if(mod_opticore_main.isOc_generalDebugOutput()){
-                        System.out.println(mod_opticore_main.oc_getCoreOutputSignature() + "Trying to jump");
-                    }
+                    // System.out.println("trying to jump");
                     Player.setJumpBuffer();
                 }
                 break;
